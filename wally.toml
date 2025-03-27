@@ -1,0 +1,19 @@
+[package]
+name = "mark-marks/zucchini"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+license = "MIT"
+exclude = ["**"]
+include = [
+    "default.project.json",
+    "dist",
+    "dist/**",
+    "LICENSE",
+    "wally.toml",
+    "README.md",
+    "CHANGELOG.md",
+]
+
+[dependencies]
+squash = "data-oriented-house/squash@2.5.0"
