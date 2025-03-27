@@ -47,7 +47,7 @@ local player_serdes = zucchini.record {
             name = zucchini.string,
         },
     },
-    inns = zucchini.map { [zucchini.string]: zucchini.boolean },
+    inns = zucchini.map { [zucchini.string] = zucchini.boolean },
     equipped = zucchini.opt { zucchini.string },
 }
 ```
