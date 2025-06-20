@@ -2,6 +2,9 @@
 --!native
 --!optimize 2
 
+--# selene: allow(shadowing)
+--# selene: allow(unused_variable)
+
 -- https://github.com/Data-Oriented-House/Squash
 --[[
     MIT License

@@ -1,6 +1,8 @@
 --!strict
 --!native
 --!optimize 2
+
+--# selene: allow(undefined_variable)
 local squash = require("@self/squash")
 
 export type Cursor = squash.Cursor
