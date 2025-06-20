@@ -50,4 +50,66 @@ local player_serdes = zucchini.record {
     inns = zucchini.map { [zucchini.string] = zucchini.boolean },
     equipped = zucchini.opt { zucchini.string },
 }
+
+local player = {
+    position = vector.create(287.3855, -13486.3),
+    health = 9,
+    name = "Cedrick",
+    poisoned = true,
+    grappled = true,
+    concious = false,
+    items = {
+        { name = "Lantern", count = 2 },
+        { name = "Waterskin", count = 1 },
+        { name = "Map", count = 4 },
+    },
+    inns = {
+        ["The Copper Cauldron"] = true,
+        Infirmary = true,
+        ["His Recess"] = true,
+    },
+    equipped = nil,
+}
+
+local cursor = zucchini.cursor()
+serdes.ser(cursor, player)
+
+local player2 = serdes.des(cursor) -- Entirely equal to `player`, type and structure wise
 ```
+
+Zucchini also features a dynamic serdes, allowing you to serialize & deserialize unknown data:
+```luau
+local my_data = {
+    this = "is some random data",
+    which = {
+        you = {
+            do = "not know anything about",
+        },
+        some_number = 1234,
+    },
+    and_it_works = "!",
+    catch_them_all = nil,
+    and_more = vector.create(12, 64),
+}
+
+local cursor = squash.cursor()
+zucchini.unknown.ser(cursor, my_data)
+
+local my_data_out = zucchini.unknown.des(cursor) -- The exact same as `my_data`
+```
+
+You can also extend said dynamic serdes with new types:
+```luau
+local my_serdes: zucchini.SerDes<MyDataType> = {
+    ser = function(cursor, value)
+        -- Some ser code
+    end,
+    des = function(cursor)
+        -- Some des code
+        return result
+    end,
+}
+
+zucchini.extend_internal(my_serdes, "MyDataType") -- `MyDataType` is now available in dynamic serdes
+```
+Importantly, though, dynamic serdes operates on `typeof` to fetch the data type to use. Therefore, this only works for extending Zucchini with datatypes that aren't already handled by Squash.
