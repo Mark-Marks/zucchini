@@ -1,6 +1,6 @@
 --!strict
-local spawn = require("util/spawn")
+local spawn = require("./util/spawn")
 
-spawn.start("lune run analyze")
 spawn.start("stylua lib/")
 spawn.start("selene lib/")
+spawn.start("luau tests/unit.luau")

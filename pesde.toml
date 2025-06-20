@@ -4,12 +4,12 @@ description = "Squash with a touch of new solver"
 authors = ["marked"]
 repository = "https://github.com/mark-marks/zucchini"
 license = "MIT"
-includes = ["dist/**/*", "LICENSE", "pesde.toml", "README.md", "CHANGELOG.md"]
+includes = ["lib/**/*", "LICENSE", "pesde.toml", "README.md", "CHANGELOG.md"]
 
 [target]
 environment = "roblox"
-lib = "dist/init.luau"
-build_files = ["dist"]
+lib = "lib/init.luau"
+build_files = ["lib"]
 
 [indices]
 default = "https://github.com/pesde-pkg/index"
@@ -26,4 +26,4 @@ scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
 rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
-squash = { wally = "wally#data-oriented-house/squash", version = "^2.5.0" }
+#squash = { wally = "wally#data-oriented-house/squash", version = "^2.5.0" }

@@ -6,16 +6,42 @@
   "lsp": {
     "luau-lsp": {
       "settings": {
-        "ext": {
-          "fflags": {
-            "enable_new_solver": true
+        "luau-lsp": {
+          "diagnostics": {
+            "workspace": false
           },
+          "completion": {
+            "imports": {
+              "enabled": true,
+              "suggestServices": true,
+              "suggestRequires": true,
+              "stringRequires": {
+                "enabled": true
+              }
+            }
+          },
+          "require": {
+            "mode": "relativeToFile"
+          }
+        },
+        "ext": {
           "roblox": {
-            "enabled": true,
-            "security_type": "roblox_script"
+            "enabled": false,
+            "security_level": "roblox_script"
+          },
+          "fflags": {
+            "enable_new_solver": true,
+            "sync": true,
+            "enable_by_default": false
+          },
+          "binary": {
+            "ignore_system_version": false
           }
         }
       }
     }
+  },
+  "file_types": {
+    "Luau": ["lua"]
   }
 }

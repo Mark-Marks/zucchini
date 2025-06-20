@@ -1,6 +1,6 @@
 {
-    "name": "zucchini",
-    "tree": {
-        "$path": "dist"
-    }
+  "name": "zucchini",
+  "tree": {
+    "$path": "lib"
+  }
 }

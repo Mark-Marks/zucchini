@@ -306,7 +306,7 @@ TEST("Primitives", function()
     do CASE "int64"
         local cursor = make_cursor()
         local serdes = zucchini.int64
-        
+
         serdes.ser(cursor, 2^53-1)
         serdes.ser(cursor, 11)
         serdes.ser(cursor, 0)
@@ -466,7 +466,7 @@ TEST("Complex", function()
         CHECK(table_equals(serdes.des(cursor), array))
 
         local array2 = { 1, 2, 3, 4, 5, 6, 7, 8 }
-        
+
         serdes.ser(cursor, array2)
         CHECK(table_equals(serdes.des(cursor), { 1, 2, 3, 4 }))
     end

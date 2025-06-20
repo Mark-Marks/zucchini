@@ -7,8 +7,8 @@ license = "MIT"
 exclude = ["**"]
 include = [
     "default.project.json",
-    "dist",
-    "dist/**",
+    "lib",
+    "lib/**",
     "LICENSE",
     "wally.toml",
     "README.md",
@@ -16,4 +16,4 @@ include = [
 ]
 
 [dependencies]
-squash = "data-oriented-house/squash@2.5.0"
+#squash = "data-oriented-house/squash@2.5.0"

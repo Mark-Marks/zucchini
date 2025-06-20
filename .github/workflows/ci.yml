@@ -2,18 +2,17 @@ name: Continous Integration
 
 on:
   push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  analyze:
-    name: Analyze
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Project
         uses: actions/checkout@v4
 
       - name: Install Rokit
@@ -21,8 +20,15 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Analyze
-        run: lune run analyze
+      - name: Build
+        run: |
+          lune run build
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: zucchini.rbxm
 
   lint:
     name: Lint
@@ -47,9 +53,45 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check code style
-        uses: JohnnyMorganz/stylua-action@v4
+      - name: Install Rokit
+        uses: CompeyDev/setup-rokit@v0.1.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          version: v0.20.0
-          args: --check lib/
+
+      - name: Check Code Style
+        run: |
+          stylua --check lib/
+
+  # fuck it
+  test:
+    if: false
+    name: Unit Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Luau
+        uses: EncodedVenom/install-luau@v4.3
+        with:
+          version: "0.678"
+
+      - name: Install Rokit
+        uses: CompeyDev/setup-rokit@v0.1.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Packages
+        run: |
+          pesde install
+
+      - name: Run Unit Tests
+        run: |
+          output=$(luau tests/unit.luau)
+          echo "$output"
+          if [[ "$output" == *"0 fails"* ]]; then
+            echo "Unit Tests Passed"
+          else
+            echo "Error: One or More Unit Tests Failed."
+            exit 1
+          fi

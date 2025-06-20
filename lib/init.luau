@@ -1,12 +1,12 @@
 --!strict
 --!native
 --!optimize 2
-local squash = require("@pkg/squash")
+local squash = require("@self/squash")
 
 export type Cursor = squash.Cursor
 export type SerDes<T...> = squash.SerDes<T...>
 
-local id_to_type: { [number]: string } = table.freeze {
+local id_to_type: { [number]: string } = {
     [1] = "boolean",
     [2] = "uint",
     [3] = "int",
@@ -52,14 +52,13 @@ local id_to_type: { [number]: string } = table.freeze {
     [43] = "UDim2",
     [44] = "Vector2int16",
     [45] = "Vector3int16",
-    [46] = "Instance",
-    [47] = "nil",
-    [48] = "literal",
-    [49] = "vector",
-    [50] = "EOF", -- End Of File
+    [46] = "nil",
+    [47] = "literal",
+    [48] = "vector",
+    [49] = "EOF", -- End Of File
 } :: any
 
-local type_to_id: { [string]: number } = table.freeze {
+local type_to_id: { [string]: number } = {
     boolean = 1,
     uint = 2,
     int = 3,
@@ -105,11 +104,10 @@ local type_to_id: { [string]: number } = table.freeze {
     UDim2 = 43,
     Vector2int16 = 44,
     Vector3int16 = 45,
-    Instance = 46,
-    ["nil"] = 47,
-    literal = 48,
-    vector = 49,
-    EOF = 50, -- End Of File
+    ["nil"] = 46,
+    literal = 47,
+    vector = 48,
+    EOF = 49, -- End Of File
 } :: any
 
 local private_serdes: { [string]: () -> SerDes<any> }
@@ -150,12 +148,21 @@ local function vector_serdes(ntype: SerDes<number>): SerDes<vector>
 end
 
 --- zucchini.array { zucchini.data_type, length? }
-local array_serdes: (<T>(type: { SerDes<T> }) -> SerDes<{ T }>) & (<T>(type: { SerDes<T> | number }) -> SerDes<{ T }>) & (<T, DV>(type: { Defaulted<T, DV> }) -> SerDes<{ Reveal<T> }>) & (<T, DV>(type: { Defaulted<T, DV> | number }) -> SerDes<{ Reveal<T> }>) = function(mtype)
+local array_serdes: (<T>(type: { SerDes<T> }) -> SerDes<{ T }>) & (<T>(type: { SerDes<T> | number }) -> SerDes<{ T }>) & (<T, DV>(type: { Defaulted<T, DV> }) -> SerDes<{ Reveal<T> }>) & (<T, DV>(type: { Defaulted<T, DV> | number }) -> SerDes<{ Reveal<T> }>) = function(
+    mtype
+)
     return squash.array(mtype[1], mtype[2])
 end :: any
 
 --- zucchini.map { [zucchini.key_type] = zucchini.value_type }
-local map_serdes: (<K, V>(type: { [SerDes<K>]: SerDes<V> }) -> SerDes<{ [K]: V }>) & (<K, DK, V>(type: { [Defaulted<K, DK>]: SerDes<V> }) -> SerDes<{ [Reveal<K>]: V }>) & (<K, V, DV>(type: { [SerDes<K>]: Defaulted<V, DV> }) -> SerDes<{ [K]: Reveal<V> }>) & (<K, DK, V, DV>(type: { [Defaulted<K, DK>]: Defaulted<V, DV> }) -> SerDes<{ [Reveal<K>]: Reveal<V> }>) = function<K, V>(type: { [SerDes<K>]: SerDes<V> }): SerDes<{ [K]: V }>
+local map_serdes: (<K, V>(type: { [SerDes<K>]: SerDes<V> }) -> SerDes<{ [K]: V }>) & (<K, DK, V>(type: { [Defaulted<K, DK>]: SerDes<V> }) -> SerDes<{ [Reveal<K>]: V }>) & (<K, V, DV>(type: { [SerDes<K>]: Defaulted<V, DV> }) -> SerDes<{ [K]: Reveal<V> }>) & (<K, DK, V, DV>(type: { [Defaulted<K, DK>]: Defaulted<V, DV> }) -> SerDes<{ [Reveal<K>]: Reveal<V> }>) = function<
+    K,
+    V
+>(
+    type: {
+        [SerDes<K>]: SerDes<V>,
+    }
+): SerDes<{ [K]: V }>
     local actual_ktype, actual_vtype = next(type)
     return squash.map(actual_ktype :: any, actual_vtype)
 end :: any
@@ -166,115 +173,19 @@ local function literal_serdes<T>(type: { T }): SerDes<any>
 end
 
 --- zucchini.opt { zucchini.data_type }
-local opt_serdes: (<T>(type: { SerDes<T> }) -> SerDes<T?>) & (<T, DV>(type: { Defaulted<T, DV> }) -> SerDes<Reveal<T>?>) = function<T>(type: { SerDes<T> }): SerDes<T?>
+local opt_serdes: (<T>(type: { SerDes<T> }) -> SerDes<T?>) & (<T, DV>(type: { Defaulted<T, DV> }) -> SerDes<Reveal<T>?>) = function<
+    T
+>(
+    type: {
+        SerDes<
+            T
+        >
+    }
+): SerDes<
+    T?
+>
     return squash.opt(type[1])
 end :: any
-
--- Fix when I figure out the types
---local squash_str = squash.string()
---local str_push = squash_str.ser
---local str_pop = squash_str.des
---local string_cache = {}
---local function string_serdes(opts: ({ number } | { length: number?, min: number?, max: number? })?): SerDes<string>
---    if not opts then
---        return squash_str
---    end
---
---    local static_length: number?
---    local max_length: number?
---    local min_length: number?
---
---    if opts.length then
---        static_length = opts.length :: any
---    end
---
---    if opts.min then
---        min_length = opts.min :: any
---    end
---
---    if opts.max then
---        max_length = opts.max :: any
---    end
---
---    if not opts.length and not opts.min and not opts.max then
---        static_length = opts[1]
---    end
---
---    local cache_options = { static_length = static_length, max_length = max_length, min_length = min_length }
---    local cache_hit = string_cache[cache_options]
---    if cache_hit then
---        return cache_hit
---    end
---
---    local check: (str: string) -> boolean
---    do
---        if min_length then
---            if max_length then
---                check = function(str: string): boolean
---                    local len = #str
---                    return len >= min_length and len <= max_length
---                end
---            else
---                check = function(str: string): boolean
---                    return #str >= min_length
---                end
---            end
---        elseif max_length then
---            if min_length then
---                check = function(str: string): boolean
---                    local len = #str
---                    return len >= min_length and len <= max_length
---                end
---            else
---                check = function(str: string): boolean
---                    return #str <= max_length
---                end
---            end
---        elseif static_length then
---            check = function(str: string): boolean
---                return #str == static_length
---            end
---        else
---            check = function(str: string): boolean
---                return true
---            end
---        end
---    end
---
---    local serdes
---    if static_length then
---        local squash_serdes = squash.string(static_length :: any)
---        local push = squash_serdes.ser
---        local pop = squash_serdes.des
---
---        serdes = {
---            ser = function(cursor: Cursor, str: string)
---                assert(check(str))
---                push(cursor, str)
---            end,
---            des = function(cursor: Cursor): string
---                local str = pop(cursor)
---                assert(check(str))
---                return str
---            end,
---        }
---    else
---        serdes = {
---            ser = function(cursor: Cursor, str: string)
---                assert(check(str))
---                str_push(cursor, str)
---            end,
---            des = function(cursor: Cursor): string
---                local str = str_pop(cursor)
---                assert(check(str))
---                return str
---            end,
---        }
---    end
---
---    string_cache[cache_options] = serdes
---    return serdes
---end
 
 local function record_serdes<T>(schema: T): SerDes<Reveal<T>>
     return squash.record(schema)
@@ -360,12 +271,12 @@ export type function Reveal(t: type)
         for key, v in mt:properties() do
             if key == index_singleton then
                 t = v.read or v.write :: any
-            end 
+            end
         end
     end
 
     local tbl_props = t:properties()
-    
+
     local phantom_data = GetSerDesType(t)
     if phantom_data ~= types.never then
         return Reveal(phantom_data)
@@ -425,7 +336,7 @@ private_serdes = (
         Axes = squash.Axes,
         BrickColor = squash.BrickColor,
         EnumItem = squash.EnumItem,
-        CatalogueSearchParams = squash.CatalogueSearchParams,
+        CatalogSearchParams = squash.CatalogSearchParams,
         CFrame = function(number_serdes: SerDes<number>?): SerDes<CFrame>
             return squash.CFrame(number_serdes or f32)
         end,
@@ -512,7 +423,17 @@ private_serdes = (
     } :: any
 ) :: { [string]: () -> SerDes<any> }
 
-export type Defaulted<T, U> = typeof(setmetatable(({} :: any) :: T, {} :: { __call: (self: any, x: { U }?) -> T, __index: T }))
+local function extend_internal<T>(serdes: SerDes<T>, name: string)
+    private_serdes[name] = serdes
+    local next_entry = #id_to_type + 1
+    id_to_type[next_entry] = name
+    type_to_id[name] = next_entry
+end
+
+export type Defaulted<T, U> = typeof(setmetatable(
+    ({} :: any) :: T,
+    {} :: { __call: (self: any, x: { U }?) -> T, __index: T }
+))
 local function wrap_with_default<T, U>(ty: (U) -> T, default: U): Defaulted<T, U>
     local with_default = ty(default)
 
@@ -551,7 +472,7 @@ local zucchini = {
     Axes = squash.Axes(),
     BrickColor = squash.BrickColor(),
     EnumItem = squash.EnumItem,
-    CatalogueSearchParams = squash.CatalogueSearchParams(),
+    CatalogueSearchParams = squash.CatalogSearchParams(),
     CFrame = wrap_with_default(squash.CFrame, f32),
     Color3 = squash.Color3(),
     ColorSequenceKeypoint = squash.ColorSequenceKeypoint(),
@@ -580,7 +501,7 @@ local zucchini = {
     UDim2 = wrap_with_default(squash.UDim2, f32),
     Vector2int16 = squash.Vector2int16(),
     Vector3int16 = squash.Vector3int16(),
-    unknown = unknown_serdes, 
+    unknown = unknown_serdes,
     ["nil"] = nil_serdes,
     literal = literal_serdes,
     vector = wrap_with_default(vector_serdes, f32),
@@ -601,12 +522,13 @@ local zucchini = {
         filepath = squash.string.filepath,
         datastore = squash.string.datastore,
     },
-    
+
     id_to_type_map = id_to_type,
     type_to_id_map = type_to_id,
     cursor = squash.cursor,
     cursor_from_buffer = squash.frombuffer,
     reveal = reveal,
+    extend_internal = extend_internal,
 }
 
 return zucchini
