@@ -62,9 +62,7 @@ jobs:
         run: |
           stylua --check lib/
 
-  # fuck it
   test:
-    if: false
     name: Unit Testing
     runs-on: ubuntu-latest
     steps:

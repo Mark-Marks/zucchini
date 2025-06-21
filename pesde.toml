@@ -1,5 +1,5 @@
 name = "marked/zucchini"
-version = "0.1.0"
+version = "0.1.1"
 description = "Squash with a touch of new solver"
 authors = ["marked"]
 repository = "https://github.com/mark-marks/zucchini"
