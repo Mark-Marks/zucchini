@@ -80,4 +80,6 @@ jobs:
         run: pesde auth login --token "${{ secrets.PESDE_AUTH_TOKEN }}"
 
       - name: Pesde Publish
-        run: pesde publish -y
+        run: | #?
+          pesde install
+          pesde publish -y
